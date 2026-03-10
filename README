@@ -1,4 +1,4 @@
-# DARE_DATA_K8S
+# Breast_Cancer_K8S
 
 Machine Learning pipeline orchestrated with Kubernetes, including a database, automated model training, and a serving API.
 
