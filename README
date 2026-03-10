@@ -1,0 +1,152 @@
+# DARE_DATA_K8S
+
+Machine Learning pipeline orchestrated with Kubernetes, including a database, automated model training, and a serving API.
+
+---
+
+## 📌 Overview
+
+This project demonstrates a complete ML architecture running inside a Kubernetes cluster, composed of:
+
+- Persistent database
+- Job to populate data
+- Manual training job
+- Scheduled retraining with CronJob
+- API for model serving
+- Persistence via PVC
+- Configuration via ConfigMaps and Secrets
+- External exposure via Ingress
+
+The goal is to demonstrate a clear separation between batch workloads and long-running services within a Kubernetes cluster.
+
+---
+
+## 🏗 Architecture
+
+System workflow:
+
+1. Database starts with persistent storage  
+2. Job populates the database  
+3. Job/CronJob performs model training  
+4. Trained model is stored in persistent volume  
+5. API loads and serves the trained model  
+6. Ingress exposes the application externally  
+
+---
+
+## ☸️ Kubernetes Resources
+
+### Namespace
+Logical isolation for the application environment.
+
+### ConfigMaps
+Store:
+- Environment variables
+- Application configuration
+- Model parameters
+
+### Secrets
+Store:
+- Database credentials
+- Sensitive information
+
+### Storage
+- `db-pvc.yaml`: database persistence
+- `model-pvc.yaml`: trained model persistence
+
+### Database
+- Deployment
+- Service (ClusterIP)
+- PersistentVolumeClaim
+
+### Training
+- `populate-db-job.yaml`: populates database
+- `job.yaml`: manual training
+- `cronjob.yaml`: scheduled automatic retraining
+
+### API (Serving)
+- Deployment
+- Service (ClusterIP)
+- Ingress
+
+---
+
+## 🚀 Deployment
+
+## 🐳 Build Docker Images with Docker Desktop
+
+You can build and run all Docker images locally using Docker Desktop before deploying to Kubernetes.
+
+The images used in this project are:
+
+- `breast-cancer-serving:1.0`
+- `breast-cancer-train:1.0`
+- `breast-cancer-populate-db:1.0`
+
+---
+
+### Build Images Locally
+
+
+# Build Serving image
+cd api
+docker build -t breast-cancer-serving:1.0 .
+
+# Build Training image
+cd ../training
+docker build -t breast-cancer-train:1.0 .
+
+# Build Populate DB image
+cd ../populate-db
+docker build -t breast-cancer-populate-db:1.0 .
+
+
+## Kubernetes
+
+### 1. Create namespace
+kubectl apply -f k8s/config/namespace.yaml
+
+## 2. Apply Secrets and ConfigMaps
+kubectl apply -f k8s/secrets/
+kubectl apply -f k8s/config/
+
+## 3. Create Persistent Volumes
+ kubectl apply -f k8s/storage/
+
+## 4. Deploy Database
+kubectl apply -f k8s/db/
+
+## 5. Populate Database
+kubectl apply -f k8s/training/populate-db-job.yaml
+
+## 6. Train Model
+kubectl apply -f k8s/training/job.yaml
+
+## 7. Deploy API and Ingress
+kubectl apply -f k8s/serving/
+
+
+## 🔄 Automatic Retraining
+
+The `breast-cancer-retrain` CronJob runs the training job on a scheduled basis. 
+
+Each time it runs:
+
+1. Kubernetes creates a **new Pod** using the `breast-cancer-train:1.0` image.
+2. The Pod executes the retraining script, pulling configuration from `ConfigMap` and credentials from `Secrets`.
+3. The trained model is saved to the **persistent volume** (`model-pvc`), ensuring that updates persist across pods.
+4. After completion, the Pod terminates automatically.
+
+This setup ensures that the model is **continuously updated** with newly available data from the database, without manual intervention.
+
+
+## 🧪 Testing
+
+The `test/` folder now contains the following scripts:
+
+- **`upload_csv.py`** – Upload CSV files to the 'upload-training-csv' endpoint.
+- **`insert_training.py`** – Insert single training records into the database via the 'insert-training' endpoint.
+- **`test_predict.py`** – Test the 'predict' endpoint with multiple cases, including valid and invalid values to verify error handling.
+- **`concurrent_stress_test.py`** – Perform concurrent stress testing on the 'predict' endpoint, measuring response time, throughput, and stability.
+
+Each script can be run independently and helps verify the API's behavior under different conditions, including normal operation and error scenarios.

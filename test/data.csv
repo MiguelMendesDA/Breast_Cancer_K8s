@@ -1,0 +1,11 @@
+age,gender,smoking_habits,alcohol_habits,weight,height,bmi,breastfeeding,oral_contraception,breast_cancer_history
+45,Female,No,Yes,70,165,25.7,Yes,No,No
+52,Female,Yes,Yes,82,170,28.4,No,Yes,Yes
+38,Female,No,No,60,160,23.4,Yes,No,No
+61,Female,Yes,No,75,158,30.0,No,Yes,Yes
+47,Female,No,Yes,68,167,24.4,Yes,No,No
+55,Female,Yes,Yes,90,172,30.4,No,Yes,Yes
+33,Female,No,No,58,162,22.1,Yes,No,No
+49,Female,Yes,No,72,168,25.5,No,Yes,Yes
+41,Female,No,Yes,65,164,24.2,Yes,No,No
+59,Female,Yes,Yes,85,169,29.8,No,Yes,Yes

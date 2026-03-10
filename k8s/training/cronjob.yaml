@@ -1,0 +1,31 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: breast-cancer-retrain
+  namespace: breast-cancer
+spec:
+  schedule: "00 13 * * *"
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      template:
+        metadata: {}
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: training
+              image: breast-cancer-train:1.0
+              imagePullPolicy: Never
+              envFrom:
+                - configMapRef:
+                    name: app-config
+                - secretRef:
+                    name: mysql-secrets
+
+              volumeMounts:
+                - name: model-storage
+                  mountPath: /app/models
+          volumes:
+            - name: model-storage
+              persistentVolumeClaim:
+                claimName: model-pvc 

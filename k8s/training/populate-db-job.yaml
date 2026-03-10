@@ -1,0 +1,39 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: populate-training-db
+  namespace: breast-cancer
+spec:
+  backoffLimit: 2
+  template:
+    metadata: {}
+    spec:
+      restartPolicy: Never
+      initContainers:
+        - name: wait-for-db
+          image: busybox:latest
+          command:
+            - sh
+            - -c
+            - |
+              echo "Waiting for MySQL to be ready..."
+              while ! nc -z $MYSQL_HOST $MYSQL_PORT; do
+                echo "MySQL is not ready. Sleeping 2s..."
+                sleep 2
+              done
+              echo "MySQL is ready!"
+          envFrom:
+              - configMapRef:
+                  name: app-config
+              - secretRef:
+                  name: mysql-secrets
+      containers:
+        - name: populate-db
+          image: breast-cancer-populate-db:1.0
+          imagePullPolicy: Never
+          command: ["python", "populate-db.py"]
+          envFrom:
+            - secretRef:
+                name: mysql-secrets
+            - configMapRef:
+                name: app-config
