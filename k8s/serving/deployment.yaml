@@ -15,8 +15,8 @@ spec:
     spec:
       containers:
         - name: serving
-          image: breast-cancer-serving:1.0
-          imagePullPolicy: Never
+          image: miguelmendesds/breast-cancer-serving:1.0
+          imagePullPolicy: IfNotPresent
 
           ports:
             - containerPort: 8000

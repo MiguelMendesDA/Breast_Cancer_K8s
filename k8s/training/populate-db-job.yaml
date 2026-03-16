@@ -8,7 +8,7 @@ spec:
   template:
     metadata: {}
     spec:
-      restartPolicy: Never
+      restartPolicy: IfNotPresent
       initContainers:
         - name: wait-for-db
           image: busybox:latest
@@ -29,7 +29,7 @@ spec:
                   name: mysql-secrets
       containers:
         - name: populate-db
-          image: breast-cancer-populate-db:1.0
+          image: miguelmendesds/breast-cancer-populate-db:1.0
           imagePullPolicy: Never
           command: ["python", "populate-db.py"]
           envFrom:

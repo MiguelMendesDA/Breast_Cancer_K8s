@@ -8,9 +8,8 @@ spec:
   template:
     metadata: {}
     spec:
-      restartPolicy: Never
+      restartPolicy: IfNotPresent
 
-      # Init container para esperar o MySQL
       initContainers:
         - name: wait-for-db
           image: busybox
@@ -27,7 +26,7 @@ spec:
 
       containers:
         - name: training
-          image: breast-cancer-train:1.0
+          image: miguelmendesds/breast-cancer-train:1.0
           imagePullPolicy: Never
           envFrom:
               - configMapRef:
