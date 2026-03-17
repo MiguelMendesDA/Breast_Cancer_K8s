@@ -26,7 +26,7 @@ spec:
 
       containers:
         - name: training
-          image: miguelmendesds/breast-cancer-train:1.0
+          image: miguelmendesds/breast-cancer-train:IMAGE_TAG
           imagePullPolicy: Always
           envFrom:
               - configMapRef:

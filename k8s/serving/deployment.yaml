@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: serving
-          image: miguelmendesds/breast-cancer-serving:1.0
+          image: miguelmendesds/breast-cancer-serving:IMAGE_TAG
           imagePullPolicy: Always
 
           ports:
