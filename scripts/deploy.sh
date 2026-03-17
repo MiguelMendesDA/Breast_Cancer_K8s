@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [ -z "$1" ]; then
-  TAG=$(git rev-parse --short HEAD)
+  TAG=$(git rev-parse --short=7 HEAD)
   echo "No tag provided. Using current git commit SHA: $TAG"
 else
   TAG=$1
