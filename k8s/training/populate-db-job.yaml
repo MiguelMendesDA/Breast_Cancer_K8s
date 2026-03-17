@@ -8,7 +8,7 @@ spec:
   template:
     metadata: {}
     spec:
-      restartPolicy: IfNotPresent
+      restartPolicy: OnFailure
       initContainers:
         - name: wait-for-db
           image: busybox:latest
@@ -30,7 +30,7 @@ spec:
       containers:
         - name: populate-db
           image: miguelmendesds/breast-cancer-populate-db:1.0
-          imagePullPolicy: Never
+          imagePullPolicy: Always
           command: ["python", "populate-db.py"]
           envFrom:
             - secretRef:

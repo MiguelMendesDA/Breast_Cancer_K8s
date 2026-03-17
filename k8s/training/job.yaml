@@ -8,7 +8,7 @@ spec:
   template:
     metadata: {}
     spec:
-      restartPolicy: IfNotPresent
+      restartPolicy: OnFailure
 
       initContainers:
         - name: wait-for-db
@@ -27,7 +27,7 @@ spec:
       containers:
         - name: training
           image: miguelmendesds/breast-cancer-train:1.0
-          imagePullPolicy: Never
+          imagePullPolicy: Always
           envFrom:
               - configMapRef:
                   name: app-config
