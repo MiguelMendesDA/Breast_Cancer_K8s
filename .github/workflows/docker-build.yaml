@@ -19,17 +19,27 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
+      - name: Set Image Tag
+        id: tag
+        run: |
+          echo "IMAGE_TAG=${GITHUB_SHA::7}" >> $GITHUB_ENV
+
       - name: Build and Push Populate-DB Image
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/breast-cancer-populate-db:1.0 ./populate-db
-          docker push ${{ secrets.DOCKER_USERNAME }}/breast-cancer-populate-db:1.0
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/breast-cancer-populate-db:${IMAGE_TAG} ./populate-db
+          docker push ${{ secrets.DOCKER_USERNAME }}/breast-cancer-populate-db:${IMAGE_TAG}
 
       - name: Build and Push Training Image
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/breast-cancer-train:1.0 ./training
-          docker push ${{ secrets.DOCKER_USERNAME }}/breast-cancer-train:1.0
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/breast-cancer-train:${IMAGE_TAG} ./training
+          docker push ${{ secrets.DOCKER_USERNAME }}/breast-cancer-train:${IMAGE_TAG}
 
       - name: Build and Push Serving Image
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/breast-cancer-serving:1.0 ./api
-          docker push ${{ secrets.DOCKER_USERNAME }}/breast-cancer-serving:1.0
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/breast-cancer-serving:${IMAGE_TAG} ./api
+          docker push ${{ secrets.DOCKER_USERNAME }}/breast-cancer-serving:${IMAGE_TAG}
+
+      - name: Update Kubernetes Deployment (Minikube)
+        run: |
+          kubectl set image deployment/breast-cancer-serving serving=${{ secrets.DOCKER_USERNAME }}/breast-cancer-serving:${IMAGE_TAG} -n breast-cancer
+          kubectl rollout status deployment/breast-cancer-serving -n breast-cancer
