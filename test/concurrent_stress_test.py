@@ -8,7 +8,7 @@ ENDPOINT = "/ml/predict"
 URL = f"{BASE_URL}{ENDPOINT}"
 
 TOTAL_REQUESTS = 1000
-MAX_WORKERS = 200 
+MAX_WORKERS = 100 
 
 
 payload = {

@@ -4,7 +4,7 @@ metadata:
   name: breast-cancer-serving
   namespace: breast-cancer
 spec:
-  replicas: 2
+  replicas: 3
   selector:
     matchLabels:
       app: breast-cancer-serving

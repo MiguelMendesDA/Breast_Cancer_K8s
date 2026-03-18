@@ -95,9 +95,27 @@ All images are tagged with a commit SHA or semantic version and pushed to Docker
 
 # 🖥 Local Development with Minikube
 
-Use 'minikube start --driver=docker' to start the cluster.
+Start the local Kubernetes cluster:
+
+'minikube start --driver=docker'
+
+Enable the NGINX Ingress controller:
+
+'minikube addons enable ingress' 
+
+Verify that the ingress controller is running:
+
+'kubectl get pods -n ingress-nginx'
 
 ---
+
+## 🌐 External Access (Ingress + Minikube)
+
+The application is exposed externally using an NGINX Ingress controller.
+
+In local development, access is enabled via:
+
+'minikube tunnel'
 
 ## 🚀 Deploying to Kubernetes
 
