@@ -17,7 +17,9 @@ This project demonstrates a complete ML architecture running inside a Kubernetes
 - Configuration via ConfigMaps and Secrets
 - External exposure via Ingress
 
-The goal is to demonstrate a clear separation between batch workloads and long-running services within a Kubernetes cluster.
+The goal is to demonstrate a clear separation between batch workloads and long-running services within a Kubernetes cluster, using immutable Docker image tags to ensure version consistency.
+
+This project is designed to run both locally on Minikube for development and on remote clusters for production.
 
 ---
 
@@ -73,35 +75,35 @@ Store:
 
 ## 🚀 Deployment
 
-## 🐳 Build Docker Images with Docker Desktop
+## 🐳 Build & Push Docker Images
 
-You can build and run all Docker images locally using Docker Desktop before deploying to Kubernetes.
+All images are tagged with a commit SHA or semantic version and pushed to Docker Hub:
 
-The images used in this project are:
+- breast-cancer-serving:<TAG>
 
-- `breast-cancer-serving:1.0`
-- `breast-cancer-train:1.0`
-- `breast-cancer-populate-db:1.0`
+- breast-cancer-train:<TAG>
+
+- breast-cancer-populate-db:<TAG>
+
+### Workflow:
+
+1. Build the Docker images locally.
+
+2. Push them to Docker Hub (or your private registry).
 
 ---
 
-### Build Images Locally
+# 🖥 Local Development with Minikube
 
+Use 'minikube start --driver=docker' to start the cluster.
 
-# Build Serving image
-cd api
-docker build -t breast-cancer-serving:1.0 .
+Load images into Minikube if not pulling from Docker Hub with:
 
-# Build Training image
-cd ../training
-docker build -t breast-cancer-train:1.0 .
+'minikube image load'
 
-# Build Populate DB image
-cd ../populate-db
-docker build -t breast-cancer-populate-db:1.0 .
+---
 
-
-## Kubernetes
+## Deploying to Kubernetes
 
 ### 1. Create namespace
 kubectl apply -f k8s/config/namespace.yaml
@@ -125,6 +127,7 @@ kubectl apply -f k8s/training/job.yaml
 ## 7. Deploy API and Ingress
 kubectl apply -f k8s/serving/
 
+---
 
 ## 🔄 Automatic Retraining
 
@@ -132,13 +135,30 @@ The `breast-cancer-retrain` CronJob runs the training job on a scheduled basis.
 
 Each time it runs:
 
-1. Kubernetes creates a **new Pod** using the `breast-cancer-train:1.0` image.
+1. Kubernetes creates a **new Pod** using the `breast-cancer-train:<TAG>` image.
 2. The Pod executes the retraining script, pulling configuration from `ConfigMap` and credentials from `Secrets`.
 3. The trained model is saved to the **persistent volume** (`model-pvc`), ensuring that updates persist across pods.
 4. After completion, the Pod terminates automatically.
 
 This setup ensures that the model is **continuously updated** with newly available data from the database, without manual intervention.
 
+---
+
+## 📜 Automatic Deployment Script
+
+You can trigger a deployment update with:
+
+./scripts/deploy.sh [<TAG>]
+
+If <TAG> is omitted, it uses the current git commit SHA.
+
+- Updates the serving deployment image.
+
+- Re-runs the populate-db and training jobs.
+
+This ensures the cluster always runs the latest tagged images.
+
+---
 
 ## 🧪 Testing
 
@@ -150,3 +170,13 @@ The `test/` folder now contains the following scripts:
 - **`concurrent_stress_test.py`** – Perform concurrent stress testing on the 'predict' endpoint, measuring response time, throughput, and stability.
 
 Each script can be run independently and helps verify the API's behavior under different conditions, including normal operation and error scenarios.
+
+---
+
+## 🛠 CI/CD with GitHub Actions
+
+- Builds and pushes Serving, Training, and Populate DB images on push to main.
+
+- Tags images with commit SHA for immutable versioning.
+
+- Deployment is triggered manually via deploy.sh.
