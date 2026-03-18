@@ -89,7 +89,7 @@ All images are tagged with a commit SHA or semantic version and pushed to Docker
 
 1. Build the Docker images locally.
 
-2. Push them to Docker Hub (or your private registry).
+2. Push them to Docker Hub.
 
 ---
 
@@ -97,34 +97,36 @@ All images are tagged with a commit SHA or semantic version and pushed to Docker
 
 Use 'minikube start --driver=docker' to start the cluster.
 
-Load images into Minikube if not pulling from Docker Hub with:
+---
 
-'minikube image load'
+## 🚀 Deploying to Kubernetes
+
+You can deploy the full ML pipeline either **manually** step by step or **automatically** using the `deploy.sh` script.  
 
 ---
 
-## Deploying to Kubernetes
+### Manual Deployment Steps
 
 ### 1. Create namespace
 kubectl apply -f k8s/config/namespace.yaml
 
-## 2. Apply Secrets and ConfigMaps
+### 2. Apply Secrets and ConfigMaps
 kubectl apply -f k8s/secrets/
 kubectl apply -f k8s/config/
 
-## 3. Create Persistent Volumes
+### 3. Create Persistent Volumes
  kubectl apply -f k8s/storage/
 
-## 4. Deploy Database
+### 4. Deploy Database
 kubectl apply -f k8s/db/
 
-## 5. Populate Database
+### 5. Populate Database
 kubectl apply -f k8s/training/populate-db-job.yaml
 
-## 6. Train Model
+### 6. Train Model
 kubectl apply -f k8s/training/job.yaml
 
-## 7. Deploy API and Ingress
+### 7. Deploy API and Ingress
 kubectl apply -f k8s/serving/
 
 ---
