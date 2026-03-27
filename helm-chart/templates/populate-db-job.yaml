@@ -2,7 +2,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: populate-training-db
-  namespace: breast-cancer
+  namespace: {{ .Release.Namespace }}
 spec:
   backoffLimit: 2
   template:
@@ -23,13 +23,13 @@ spec:
               done
               echo "MySQL is ready!"
           envFrom:
-              - configMapRef:
-                  name: app-config
-              - secretRef:
-                  name: mysql-secrets
+            - configMapRef:
+                name: app-config
+            - secretRef:
+                name: mysql-secrets
       containers:
         - name: populate-db
-          image: miguelmendesds/breast-cancer-populate-db:IMAGE_TAG
+          image: {{ .Values.image.populateDB }}
           imagePullPolicy: Always
           command: ["python", "populate-db.py"]
           envFrom:

@@ -1,72 +1,35 @@
 #!/bin/bash
+# ===============================================
+# deploy.sh – Helm Chart Deployment for Breast Cancer App
+# ===============================================
 
 # ----------------------------
-# 1️⃣ Define tag
+# 1️⃣ Define image tag
 # ----------------------------
-if [ -z "$1" ]; then
-  TAG=$(git rev-parse --short=7 HEAD)
-  echo "No tag provided. Using current git commit SHA: $TAG"
-else
-  TAG=$1
-fi
-
-echo "🚀 Deploying version: $TAG"
+TAG=${1:-$(git rev-parse --short=7 HEAD)}
+echo "🚀 Deploying Helm chart with image tag: $TAG"
 
 # ----------------------------
-# 2️⃣ Create namespace
+# 2️⃣ Helm values
 # ----------------------------
-echo "📦 Applying namespace..."
-kubectl apply -f k8s/config/namespace.yaml
+HELM_NAMESPACE="breast-cancer"
+HELM_RELEASE="breast-cancer"
+HELM_CHART="./helm-chart"
 
 # ----------------------------
-# 3️⃣ Apply Secrets and ConfigMaps
+# 3️⃣ Deploy / Upgrade with Helm
 # ----------------------------
-echo "🔐 Applying Secrets..."
-kubectl apply -f k8s/secrets/
-echo "⚙️ Applying ConfigMaps..."
-kubectl apply -f k8s/config/
+helm upgrade --install "$HELM_RELEASE" "$HELM_CHART" \
+  --namespace "$HELM_NAMESPACE" \
+  --create-namespace \
+  --set secrets.mysqlUser="${MYSQL_USER}" \
+  --set secrets.mysqlPassword="${MYSQL_PASSWORD}" \
+  --set image.populateDB="miguelmendesds/breast-cancer-populate-db:$TAG" \
+  --set image.training="miguelmendesds/breast-cancer-train:$TAG" \
+  --set image.serving="miguelmendesds/breast-cancer-serving:$TAG"
 
 # ----------------------------
-# 4️⃣ Create Persistent Volumes
+# 4️⃣ Check deployment status
 # ----------------------------
-echo "💾 Applying Persistent Volumes..."
-kubectl apply -f k8s/storage/
-
-# ----------------------------
-# 5️⃣ Deploy Database
-# ----------------------------
-echo "🛢 Deploying Database..."
-kubectl apply -f k8s/db/
-
-# ----------------------------
-# 6️⃣ Apply Serving resources (Deployment, Service, Ingress)
-# ----------------------------
-echo "🔹 Updating serving resources..."
-sed "s|IMAGE_TAG|$TAG|g" k8s/serving/deployment.yaml | kubectl apply -f -
-kubectl apply -f k8s/serving/service.yaml
-kubectl apply -f k8s/serving/ingress.yaml
-
-kubectl rollout status deployment/breast-cancer-serving -n breast-cancer || exit 1
-
-# ----------------------------
-# 7️⃣ Re-run populate DB job
-# ----------------------------
-echo "🔹 Re-running populate DB job..."
-kubectl delete job populate-training-db -n breast-cancer --ignore-not-found
-sed "s|IMAGE_TAG|$TAG|g" k8s/training/populate-db-job.yaml | kubectl apply -f -
-
-# ----------------------------
-# 8️⃣ Re-run manual training job
-# ----------------------------
-echo "🔹 Re-running manual training job..."
-kubectl delete job breast-cancer-training -n breast-cancer --ignore-not-found
-sed "s|IMAGE_TAG|$TAG|g" k8s/training/job.yaml | kubectl apply -f -
-
-# ----------------------------
-# 9️⃣ Apply CronJob for automatic retraining
-# ----------------------------
-echo "🔄 Applying CronJob for scheduled retraining..."
-kubectl delete cronjob breast-cancer-retrain -n breast-cancer --ignore-not-found
-sed "s|IMAGE_TAG|$TAG|g" k8s/training/cronjob.yaml | kubectl apply -f -
-
+kubectl rollout status deployment/breast-cancer-serving -n "$HELM_NAMESPACE"
 echo "✅ Deployment complete!"

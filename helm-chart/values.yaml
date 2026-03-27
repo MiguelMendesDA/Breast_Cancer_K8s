@@ -1,0 +1,53 @@
+# Config
+config:
+  mysqlHost: db-service
+  mysqlPort: "3306"
+  mysqlDb: breast_cancer
+
+# Secrets
+secrets:
+  mysqlUser: "changeme"
+  mysqlPassword: "changeme"
+
+# Images
+image:
+  populateDB: "dockerhub-user/breast-cancer-populate-db:changeme"
+  training: "dockerhub-user/breast-cancer-train:changeme"
+  serving: "dockerhub-user/breast-cancer-serving:changeme"
+
+# Serving
+serving:
+  replicas: 3
+
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 8000
+
+ingress:
+  host: localhost
+  path: /ml/(.*)
+
+# Cluster
+resources:
+  db:
+    requests:
+      memory: "512Mi"
+      cpu: "250m"
+    limits:
+      memory: "1Gi"
+      cpu: "500m"
+  api:
+    requests:
+      memory: "256Mi"
+      cpu: "200m"
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
+
+# PVC
+persistence:
+  db:
+    size: "1Gi"        
+  model:
+    size: "1Gi"    

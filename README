@@ -91,6 +91,8 @@ All images are tagged with a commit SHA or semantic version and pushed to Docker
 
 2. Push them to Docker Hub.
 
+3. Deploy Helm chart to Kubernetes.
+
 ---
 
 # 🖥 Local Development with Minikube
@@ -107,9 +109,8 @@ Verify that the ingress controller is running:
 
 'kubectl get pods -n ingress-nginx'
 
----
 
-## 🌐 External Access (Ingress + Minikube)
+### 🌐 External Access (Ingress + Minikube)
 
 The application is exposed externally using an NGINX Ingress controller.
 
@@ -117,35 +118,12 @@ In local development, access is enabled via:
 
 'minikube tunnel'
 
-## 🚀 Deploying to Kubernetes
-
-You can deploy the full ML pipeline either **manually** step by step or **automatically** using the `deploy.sh` script.  
 
 ---
 
-### Manual Deployment Steps
+## 🚀 Deploying to Kubernetes
 
-### 1. Create namespace
-kubectl apply -f k8s/config/namespace.yaml
-
-### 2. Apply Secrets and ConfigMaps
-kubectl apply -f k8s/secrets/
-kubectl apply -f k8s/config/
-
-### 3. Create Persistent Volumes
- kubectl apply -f k8s/storage/
-
-### 4. Deploy Database
-kubectl apply -f k8s/db/
-
-### 5. Populate Database
-kubectl apply -f k8s/training/populate-db-job.yaml
-
-### 6. Train Model
-kubectl apply -f k8s/training/job.yaml
-
-### 7. Deploy API and Ingress
-kubectl apply -f k8s/serving/
+This project is deployed using a Helm chart, wich manages all Kubernetes resource (Deployments, Services, Jobs, PVCs) in a consistent and reusable way.
 
 ---
 
@@ -170,13 +148,15 @@ You can trigger a deployment update with:
 
 ./scripts/deploy.sh [<TAG>]
 
-If <TAG> is omitted, it uses the current git commit SHA.
+If <TAG> is omitted, the current Git commit SHA is used.
 
-- Updates the serving deployment image.
+- Deploys or updates the application using Helm.
 
-- Re-runs the populate-db and training jobs.
+- Updates container images with the specified tag.
 
-This ensures the cluster always runs the latest tagged images.
+- Applies all Kubernetes resourced (Jobs, Deployments, Services, etc.).
+
+This ensures the cluster always runs the latest version of the application in a consistent and reproducible way.
 
 ---
 
@@ -199,4 +179,4 @@ Each script can be run independently and helps verify the API's behavior under d
 
 - Tags images with commit SHA for immutable versioning.
 
-- Deployment is triggered manually via deploy.sh.
+- Deployment is triggered automatically using Helm with secrets injcted from GitHub Actions Secrets.

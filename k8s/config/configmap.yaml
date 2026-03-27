@@ -1,9 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: app-config
-  namespace: breast-cancer
-data:
-  MYSQL_HOST: "db-service"
-  MYSQL_PORT: "3306"
-  MYSQL_DB: "breast_cancer"

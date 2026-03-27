@@ -2,9 +2,9 @@ apiVersion: batch/v1
 kind: CronJob
 metadata:
   name: breast-cancer-retrain
-  namespace: breast-cancer
+  namespace: {{ .Release.Namespace }}
 spec:
-  schedule: "00 13 * * *" 
+  schedule: {{ .Values.retrain.schedule | quote }} 
   jobTemplate:
     spec:
       backoffLimit: 2
@@ -16,7 +16,7 @@ spec:
           restartPolicy: OnFailure
           containers:
             - name: training
-              image: miguelmendesds/breast-cancer-train:IMAGE_TAG
+              image: {{ .Values.image.training }}
               imagePullPolicy: Always
               envFrom:
                 - configMapRef:

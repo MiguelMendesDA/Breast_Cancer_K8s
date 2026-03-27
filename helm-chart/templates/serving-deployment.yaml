@@ -2,9 +2,9 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: breast-cancer-serving
-  namespace: breast-cancer
+  namespace: {{ .Release.Namespace }}
 spec:
-  replicas: 3
+  replicas: {{ .Values.serving.replicas | default 3 }}
   selector:
     matchLabels:
       app: breast-cancer-serving
@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: serving
-          image: miguelmendesds/breast-cancer-serving:IMAGE_TAG
+          image: {{ .Values.image.serving }}
           imagePullPolicy: Always
 
           ports:
@@ -33,11 +33,11 @@ spec:
 
           resources:
             requests:
-              cpu: "200m"
-              memory: "256Mi"
+              cpu: {{ .Values.resources.api.requests.cpu | quote }}
+              memory: {{ .Values.resources.api.requests.memory | quote }}
             limits:
-              cpu: "500m"
-              memory: "512Mi"
+              cpu: {{ .Values.resources.api.limits.cpu | quote }}
+              memory: {{ .Values.resources.api.limits.memory | quote }}
 
           readinessProbe:
             httpGet:
