@@ -1,25 +1,51 @@
-# Breast_Cancer_K8S
+# Breast Cancer ML Pipeline on Kubernetes
 
-Machine Learning pipeline orchestrated with Kubernetes, including a database, automated model training, and a serving API.
+End-to-end Machine Learning pipeline fully orchestrated with Kubernetes, including data ingestion, automated training, and real-time model serving.
+
+---
+
+⚡ Quick Start
+# 1. Start Kubernetes cluster
+minikube start --driver=docker
+
+# 2. Enable Ingress
+minikube addons enable ingress
+
+# 3. Deploy with Helm
+helm upgrade --install breast-cancer ./helm
+
+# 4. Enable external access
+minikube tunnel
 
 ---
 
 ## 📌 Overview
 
-This project demonstrates a complete ML architecture running inside a Kubernetes cluster, composed of:
+This project demonstrates a production-style ML architecture running inside a Kubernetes cluster, composed of:
 
-- Persistent database
-- Job to populate data
-- Manual training job
-- Scheduled retraining with CronJob
-- API for model serving
-- Persistence via PVC
-- Configuration via ConfigMaps and Secrets
-- External exposure via Ingress
+Persistent database
+Job to populate data
+Manual training job
+Scheduled retraining via CronJob
+API for model serving
+Persistent storage using PVCs
+Configuration via ConfigMaps and Secrets
+External exposure via Ingress
+Deployment managed with Helm
 
-The goal is to demonstrate a clear separation between batch workloads and long-running services within a Kubernetes cluster, using immutable Docker image tags to ensure version consistency.
+The goal is to showcase a clear separation between batch workloads and real-time services, while ensuring reproducibility through immutable Docker image tags.
 
-This project is designed to run both locally on Minikube for development and on remote clusters for production.
+---
+
+## 💡 Why This Project
+
+This project demonstrates how to:
+
+Separate batch ML workloads from real-time inference
+Manage the model lifecycle inside Kubernetes
+Ensure reproducibility with immutable image tags
+Automate retraining pipelines using CronJobs
+Package and deploy applications using Helm charts
 
 ---
 
@@ -53,8 +79,8 @@ Store:
 - Sensitive information
 
 ### Storage
-- `db-pvc.yaml`: database persistence
-- `model-pvc.yaml`: trained model persistence
+- db-pvc.yaml: database persistence
+- model-pvc.yaml: trained model persistence
 
 ### Database
 - Deployment
@@ -62,9 +88,9 @@ Store:
 - PersistentVolumeClaim
 
 ### Training
-- `populate-db-job.yaml`: populates database
-- `training-job.yaml`: manual training
-- `retrain-cronjob.yaml`: scheduled automatic retraining
+- populate-db-job.yaml: populates database
+- training-job.yaml: manual training
+- retrain-cronjob.yaml: scheduled automatic retraining
 
 ### API (Serving)
 - Deployment
@@ -73,11 +99,27 @@ Store:
 
 ---
 
-## 🚀 Deployment
+## 📦 Helm Chart
 
-## 🐳 Build & Push Docker Images
+This project is packaged using Helm, enabling:
 
-All images are tagged with a commit SHA or semantic version and pushed to Docker Hub:
+- Reproducible deployments
+- Environment-specific configuration via values.yaml
+- Easy upgrades and rollbacks
+
+### Install
+
+helm upgrade --install breast-cancer ./helm -f values-dev.yaml
+
+###Upgrade with new version
+
+helm upgrade breast-cancer ./helm --set image.tag=<TAG>
+
+---
+
+## 🐳 Docker Images
+
+All images are versioned using commit SHA or semantic versioning and pushed to Docker Hub:
 
 - breast-cancer-serving:<TAG>
 
@@ -85,98 +127,88 @@ All images are tagged with a commit SHA or semantic version and pushed to Docker
 
 - breast-cancer-populate-db:<TAG>
 
-### Workflow:
-
-1. Build the Docker images locally.
-
-2. Push them to Docker Hub.
-
-3. Deploy Helm chart to Kubernetes.
-
 ---
 
 # 🖥 Local Development with Minikube
 
-Start the local Kubernetes cluster:
+### Start the cluster:
 
-'minikube start --driver=docker'
+minikube start --driver=docker
 
-Enable the NGINX Ingress controller:
+### Enable Ingress:
 
-'minikube addons enable ingress' 
+minikube addons enable ingress
 
-Verify that the ingress controller is running:
+### Verify controller:
 
-'kubectl get pods -n ingress-nginx'
-
-
-### 🌐 External Access (Ingress + Minikube)
-
-The application is exposed externally using an NGINX Ingress controller.
-
-In local development, access is enabled via:
-
-'minikube tunnel'
+kubectl get pods -n ingress-nginx
 
 
----
+## 🌐 External Access (Ingress + Minikube)
 
-## 🚀 Deploying to Kubernetes
-
-This project is deployed using a Helm chart, wich manages all Kubernetes resource (Deployments, Services, Jobs, PVCs) in a consistent and reusable way.
+minikube tunnel
 
 ---
 
 ## 🔄 Automatic Retraining
 
-The `breast-cancer-retrain` CronJob runs the training job on a scheduled basis. 
+The breast-cancer-retrain CronJob runs the training on a schedule.
 
-Each time it runs:
+Each execution:
 
-1. Kubernetes creates a **new Pod** using the `breast-cancer-train:<TAG>` image.
-2. The Pod executes the retraining script, pulling configuration from `ConfigMap` and credentials from `Secrets`.
-3. The trained model is saved to the **persistent volume** (`model-pvc`), ensuring that updates persist across pods.
-4. After completion, the Pod terminates automatically.
+1. Creates a new Pod using the training image
+2. Loads configuration from ConfigMaps and Secrets
+3. Trains the model
+4. Stores it in the persistent volume (model-pvc)
+5. Terminates automatically after completion
 
-This setup ensures that the model is **continuously updated** with newly available data from the database, without manual intervention.
-
+This ensures the model is continuously updated without manual intervention.
 ---
 
-## 📜 Automatic Deployment Script
+## 📜 Deployment Script
 
-You can trigger a deployment update with:
+Trigger deployment updates with:
 
 ./scripts/deploy.sh [<TAG>]
 
 If <TAG> is omitted, the current Git commit SHA is used.
 
+This script: 
+
 - Deploys or updates the application using Helm.
 
-- Updates container images with the specified tag.
+- Updates container images.
 
-- Applies all Kubernetes resourced (Jobs, Deployments, Services, etc.).
-
-This ensures the cluster always runs the latest version of the application in a consistent and reproducible way.
+- Applies all Kubernetes resources
 
 ---
 
 ## 🧪 Testing
 
-The `test/` folder contains the following scripts:
+The test/ folder includes:
 
-- **`upload_csv.py`** – Upload CSV files to the 'upload-training-csv' endpoint.
-- **`insert_training.py`** – Insert single training records into the database via the 'insert-training' endpoint.
-- **`test_predict.py`** – Test the 'predict' endpoint with multiple cases, including valid and invalid values to verify error handling.
-- **`concurrent_stress_test.py`** – Perform concurrent stress testing on the 'predict' endpoint, measuring response time, throughput, and stability.
+- upload_csv.py – Upload CSV files
+- insert_training.py – Insert training records
+- test_predict.py – Test prediction endpoint
+- concurrent_stress_test.py – Stress test API
 
-Each script can be run independently and helps verify the API's behavior under different conditions, including normal operation and error scenarios.
+### Example
+python test/test_predict.py
 
----
+--- 
 
 ## 🛠 CI/CD with GitHub Actions
 
-- Builds and pushes Serving, Training, and Populate DB images on push to main.
+- Builds and pushes all images on push to main
+- Tags images with commit SHA (immutable versioning)
+- Deploys automatically using Helm
+- Injects secrets securely via GitHub Actions Secrets
 
-- Tags images with commit SHA for immutable versioning.
+---
 
-- Deployment is triggered automatically using Helm with secrets injcted from GitHub Actions Secrets.
+## 📎 Notes
+
+This project is designed to run:
+
+- Locally using Minikube (development)
+- On remote Kubernetes clusters (production-ready structure)
