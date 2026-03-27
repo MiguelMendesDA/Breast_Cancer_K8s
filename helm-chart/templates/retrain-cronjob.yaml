@@ -4,7 +4,7 @@ metadata:
   name: breast-cancer-retrain
   namespace: {{ .Release.Namespace }}
 spec:
-  schedule: {{ .Values.retrain.schedule | quote }} 
+  schedule: {{ .Values.retrain.schedule | quote }}
   jobTemplate:
     spec:
       backoffLimit: 2
@@ -18,11 +18,23 @@ spec:
             - name: training
               image: {{ .Values.image.training }}
               imagePullPolicy: Always
-              envFrom:
-                - configMapRef:
-                    name: app-config
-                - secretRef:
-                    name: mysql-secrets
+              env:
+                - name: MYSQL_HOST
+                  value: {{ .Values.config.mysqlHost }}
+                - name: MYSQL_PORT
+                  value: "{{ .Values.config.mysqlPort }}"
+                - name: MYSQL_DB
+                  value: {{ .Values.config.mysqlDb }}
+                - name: MYSQL_USER
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Values.secrets.secretName }}
+                      key: MYSQL_USER
+                - name: MYSQL_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Values.secrets.secretName }}
+                      key: MYSQL_PASSWORD
               volumeMounts:
                 - name: model-storage
                   mountPath: /app/models

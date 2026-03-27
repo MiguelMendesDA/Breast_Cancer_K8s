@@ -6,14 +6,13 @@ config:
 
 # Secrets
 secrets:
-  mysqlUser: "changeme"
-  mysqlPassword: "changeme"
+  secretName: "mysql-secrets" 
 
 # Images
 image:
-  populateDB: "dockerhub-user/breast-cancer-populate-db:changeme"
-  training: "dockerhub-user/breast-cancer-train:changeme"
-  serving: "dockerhub-user/breast-cancer-serving:changeme"
+  populateDB: "miguelmendesds/breast-cancer-populate-db:latest"
+  training: "miguelmendesds/breast-cancer-train:latest"
+  serving: "miguelmendesds/breast-cancer-serving:latest"
 
 # Serving
 serving:
@@ -28,7 +27,7 @@ ingress:
   host: localhost
   path: /ml/(.*)
 
-# Cluster
+# Cluster resources
 resources:
   db:
     requests:
@@ -45,12 +44,13 @@ resources:
       memory: "512Mi"
       cpu: "500m"
 
-# PVC
+# PVCs
 persistence:
   db:
     size: "1Gi"        
   model:
     size: "1Gi"    
 
+# Retraining schedule
 retrain:
-  schedule: "0 13 * * *"   
+  schedule: "0 13 * * *"

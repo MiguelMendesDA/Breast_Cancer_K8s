@@ -1,3 +1,4 @@
+{{- if .Values.deployServing }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -15,22 +16,30 @@ spec:
     spec:
       containers:
         - name: serving
-          image: {{ .Values.image.serving }}
+          image: "{{ .Values.image.serving }}"
           imagePullPolicy: Always
-
           ports:
             - containerPort: 8000
-
-          envFrom:
-            - configMapRef:
-                name: app-config
-            - secretRef:
-                name: mysql-secrets
-
+          env:
+            - name: MYSQL_HOST
+              value: {{ .Values.config.mysqlHost }}
+            - name: MYSQL_PORT
+              value: "{{ .Values.config.mysqlPort }}"
+            - name: MYSQL_DB
+              value: {{ .Values.config.mysqlDb }}
+            - name: MYSQL_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.secretName }}
+                  key: MYSQL_USER
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.secretName }}
+                  key: MYSQL_PASSWORD
           volumeMounts:
             - name: model-storage
               mountPath: /app/models
-
           resources:
             requests:
               cpu: {{ .Values.resources.api.requests.cpu | quote }}
@@ -38,22 +47,20 @@ spec:
             limits:
               cpu: {{ .Values.resources.api.limits.cpu | quote }}
               memory: {{ .Values.resources.api.limits.memory | quote }}
-
           readinessProbe:
             httpGet:
               path: /docs
               port: 8000
             initialDelaySeconds: 5
             periodSeconds: 5
-
           livenessProbe:
             httpGet:
               path: /docs
               port: 8000
             initialDelaySeconds: 10
             periodSeconds: 10
-
       volumes:
         - name: model-storage
           persistentVolumeClaim:
             claimName: model-pvc
+{{- end }}
