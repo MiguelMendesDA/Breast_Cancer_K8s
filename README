@@ -63,8 +63,8 @@ Store:
 
 ### Training
 - `populate-db-job.yaml`: populates database
-- `job.yaml`: manual training
-- `cronjob.yaml`: scheduled automatic retraining
+- `training-job.yaml`: manual training
+- `retrain-cronjob.yaml`: scheduled automatic retraining
 
 ### API (Serving)
 - Deployment

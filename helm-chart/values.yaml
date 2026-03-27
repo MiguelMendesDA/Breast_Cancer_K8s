@@ -51,3 +51,6 @@ persistence:
     size: "1Gi"        
   model:
     size: "1Gi"    
+
+retrain:
+  schedule: "0 13 * * *"   
