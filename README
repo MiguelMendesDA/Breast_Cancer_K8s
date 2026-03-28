@@ -21,17 +21,19 @@ minikube tunnel
 
 ## 📌 Overview
 
+![Workflow](images/arquitecture.png)
+
 This project demonstrates a production-style ML architecture running inside a Kubernetes cluster, composed of:
 
-Persistent database
-Job to populate data
-Manual training job
-Scheduled retraining via CronJob
-API for model serving
-Persistent storage using PVCs
-Configuration via ConfigMaps and Secrets
-External exposure via Ingress
-Deployment managed with Helm
+- Persistent database
+- Job to populate data
+- Manual training job
+- Scheduled retraining via CronJob
+- API for model serving
+- Persistent storage using PVCs
+- Configuration via ConfigMaps and Secrets
+- External exposure via Ingress
+- Deployment managed with Helm
 
 The goal is to showcase a clear separation between batch workloads and real-time services, while ensuring reproducibility through immutable Docker image tags.
 
@@ -41,11 +43,11 @@ The goal is to showcase a clear separation between batch workloads and real-time
 
 This project demonstrates how to:
 
-Separate batch ML workloads from real-time inference
-Manage the model lifecycle inside Kubernetes
-Ensure reproducibility with immutable image tags
-Automate retraining pipelines using CronJobs
-Package and deploy applications using Helm charts
+- Separate batch ML workloads from real-time inference
+- Manage the model lifecycle inside Kubernetes
+- Ensure reproducibility with immutable image tags
+- Automate retraining pipelines using CronJobs
+- Package and deploy applications using Helm charts
 
 ---
 
