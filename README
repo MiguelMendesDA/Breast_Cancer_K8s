@@ -21,7 +21,7 @@ minikube tunnel
 
 ## 📌 Overview
 
-![Workflow](images/arquitecture.png)
+![Workflow](images/architecture.png)
 
 This project demonstrates a production-style ML architecture running inside a Kubernetes cluster, composed of:
 
