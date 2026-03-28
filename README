@@ -12,7 +12,8 @@ minikube start --driver=docker
 minikube addons enable ingress
 
 # 3. Deploy with Helm
-helm upgrade --install breast-cancer ./helm
+
+./scripts/deploy.sh 
 
 # 4. Enable external access
 minikube tunnel
@@ -21,7 +22,7 @@ minikube tunnel
 
 ## 📌 Overview
 
-![Workflow](/images/architecture.png)
+![Workflow](./images/architecture.png)
 
 This project demonstrates a production-style ML architecture running inside a Kubernetes cluster, composed of:
 

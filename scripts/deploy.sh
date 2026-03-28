@@ -33,6 +33,10 @@ kubectl apply -f k8s/secrets/secrets.yaml -n "$HELM_NAMESPACE"
 # ----------------------------
 # 5️⃣ Deploy DB + Training (Helm handles PVCs)
 # ----------------------------
+echo "🛢 Cleaning old jobs..."
+kubectl delete job populate-training-db -n "$HELM_NAMESPACE" --ignore-not-found
+kubectl delete job breast-cancer-training -n "$HELM_NAMESPACE" --ignore-not-found
+
 echo "🛢 Deploying database and training jobs..."
 helm upgrade --install "$HELM_RELEASE" "$HELM_CHART" \
   --namespace "$HELM_NAMESPACE" \
