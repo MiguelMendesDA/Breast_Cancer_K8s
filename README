@@ -21,7 +21,7 @@ minikube tunnel
 
 ## 📌 Overview
 
-![Workflow](https://raw.githubusercontent.com/MiguelMendesDA/Breast_Cancer_K8s/main/images/architecture.png)
+![Workflow](./images/architecture.png)
 
 This project demonstrates a production-style ML architecture running inside a Kubernetes cluster, composed of:
 
