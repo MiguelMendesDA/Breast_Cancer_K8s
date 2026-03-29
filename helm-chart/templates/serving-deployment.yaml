@@ -4,15 +4,20 @@ kind: Deployment
 metadata:
   name: breast-cancer-serving
   namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ .Chart.Name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
 spec:
   replicas: {{ .Values.serving.replicas | default 3 }}
   selector:
     matchLabels:
-      app: breast-cancer-serving
+      app.kubernetes.io/name: {{ .Chart.Name }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
   template:
     metadata:
       labels:
-        app: breast-cancer-serving
+        app.kubernetes.io/name: {{ .Chart.Name }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
     spec:
       containers:
         - name: serving
@@ -20,23 +25,11 @@ spec:
           imagePullPolicy: Always
           ports:
             - containerPort: 8000
-          env:
-            - name: MYSQL_HOST
-              value: {{ .Values.config.mysqlHost }}
-            - name: MYSQL_PORT
-              value: "{{ .Values.config.mysqlPort }}"
-            - name: MYSQL_DB
-              value: {{ .Values.config.mysqlDb }}
-            - name: MYSQL_USER
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.secrets.secretName }}
-                  key: MYSQL_USER
-            - name: MYSQL_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.secrets.secretName }}
-                  key: MYSQL_PASSWORD
+          envFrom:
+            - secretRef:
+                name: {{ .Values.secrets.secretName }}
+            - configMapRef:
+                name: app-config
           volumeMounts:
             - name: model-storage
               mountPath: /app/models

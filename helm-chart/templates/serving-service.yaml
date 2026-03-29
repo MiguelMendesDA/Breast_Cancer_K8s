@@ -6,7 +6,8 @@ metadata:
 spec:
   type: {{ .Values.serving.service.type | default "ClusterIP" }}
   selector:
-    app: breast-cancer-serving
+    app.kubernetes.io/name: {{ .Chart.Name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
   ports:
     - protocol: TCP
       port: {{ .Values.serving.service.port | default 80 }}

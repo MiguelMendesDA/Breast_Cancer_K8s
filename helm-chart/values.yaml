@@ -15,6 +15,7 @@ image:
   serving: "miguelmendesds/breast-cancer-serving:latest"
 
 # Serving
+deployServing: true
 serving:
   replicas: 3
 

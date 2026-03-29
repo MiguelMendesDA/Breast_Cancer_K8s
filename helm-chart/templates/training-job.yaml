@@ -3,10 +3,16 @@ kind: Job
 metadata:
   name: breast-cancer-training
   namespace: {{ .Release.Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ .Chart.Name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
 spec:
   backoffLimit: 2
   template:
-    metadata: {}
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ .Chart.Name }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
     spec:
       restartPolicy: OnFailure
 
@@ -23,45 +29,21 @@ spec:
                 sleep 2
               done
               echo "MySQL is ready!"
-          env:
-            - name: MYSQL_HOST
-              value: {{ .Values.config.mysqlHost }}
-            - name: MYSQL_PORT
-              value: "{{ .Values.config.mysqlPort }}"
-            - name: MYSQL_DB
-              value: {{ .Values.config.mysqlDb }}
-            - name: MYSQL_USER
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.secrets.secretName }}
-                  key: MYSQL_USER
-            - name: MYSQL_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.secrets.secretName }}
-                  key: MYSQL_PASSWORD
+          envFrom:
+            - secretRef:
+                name: {{ .Values.secrets.secretName }}
+            - configMapRef:
+                name: app-config
 
       containers:
         - name: training
           image: {{ .Values.image.training }}
           imagePullPolicy: Always
-          env:
-            - name: MYSQL_HOST
-              value: {{ .Values.config.mysqlHost }}
-            - name: MYSQL_PORT
-              value: "{{ .Values.config.mysqlPort }}"
-            - name: MYSQL_DB
-              value: {{ .Values.config.mysqlDb }}
-            - name: MYSQL_USER
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.secrets.secretName }}
-                  key: MYSQL_USER
-            - name: MYSQL_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.secrets.secretName }}
-                  key: MYSQL_PASSWORD
+          envFrom:
+            - secretRef:
+                name: {{ .Values.secrets.secretName }}
+            - configMapRef:
+                name: app-config
           volumeMounts:
             - name: model-storage
               mountPath: /app/models

@@ -1,3 +1,4 @@
+{{- if .Values.createConfig }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -7,3 +8,4 @@ data:
   MYSQL_HOST: {{ .Values.config.mysqlHost | quote }}
   MYSQL_PORT: {{ .Values.config.mysqlPort | quote }}
   MYSQL_DB: {{ .Values.config.mysqlDb | quote }}
+{{- end }}

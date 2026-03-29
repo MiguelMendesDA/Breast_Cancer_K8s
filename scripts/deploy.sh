@@ -1,6 +1,6 @@
 #!/bin/bash
 # ===============================================
-# deploy.sh – Helm Chart Deployment for Breast Cancer App (using Kubernetes Secrets)
+# deploy.sh – Helm Deployment
 # ===============================================
 
 set -e
@@ -31,44 +31,41 @@ echo "🔑 Ensuring MySQL secret exists..."
 kubectl apply -f k8s/secrets/secrets.yaml -n "$HELM_NAMESPACE"
 
 # ----------------------------
-# 5️⃣ Deploy DB + Training (Helm handles PVCs)
+# 5️⃣ Clean old Jobs
 # ----------------------------
-echo "🛢 Cleaning old jobs..."
+echo "🧹 Cleaning old jobs..."
 kubectl delete job populate-training-db -n "$HELM_NAMESPACE" --ignore-not-found
 kubectl delete job breast-cancer-training -n "$HELM_NAMESPACE" --ignore-not-found
 
-echo "🛢 Deploying database and training jobs..."
+# ----------------------------
+# 6️⃣ Deploy everything
+# ----------------------------
+echo "🛢 Deploying Jobs + API..."
 helm upgrade --install "$HELM_RELEASE" "$HELM_CHART" \
   --namespace "$HELM_NAMESPACE" \
   --set image.populateDB="miguelmendesds/breast-cancer-populate-db:$TAG" \
   --set image.training="miguelmendesds/breast-cancer-train:$TAG" \
-  --set deployServing=false \
-  --wait
-
-# ----------------------------
-# 6️⃣ Wait for DB population job
-# ----------------------------
-echo "⏳ Waiting for populate-training-db job to complete..."
-kubectl wait --for=condition=complete job/populate-training-db -n "$HELM_NAMESPACE" --timeout=300s
-
-# ----------------------------
-# 7️⃣ Wait for training job
-# ----------------------------
-echo "⏳ Waiting for breast-cancer-training job to complete..."
-kubectl wait --for=condition=complete job/breast-cancer-training -n "$HELM_NAMESPACE" --timeout=600s || true
-
-# ----------------------------
-# 8️⃣ Deploy Serving API
-# ----------------------------
-echo "🔹 Deploying serving API..."
-helm upgrade --install "$HELM_RELEASE" "$HELM_CHART" \
-  --namespace "$HELM_NAMESPACE" \
-  --set deployServing=true \
   --set image.serving="miguelmendesds/breast-cancer-serving:$TAG" \
+  --set deployServing=true \
+  --set createConfig=true \
   --wait
 
 # ----------------------------
-# 9️⃣ Check rollout
+# 7️⃣ Wait for DB population job
+# ----------------------------
+echo "⏳ Waiting for populate-training-db..."
+kubectl wait --for=condition=complete job/populate-training-db \
+  -n "$HELM_NAMESPACE" --timeout=300s
+
+# ----------------------------
+# 8️⃣ Wait for training job
+# ----------------------------
+echo "⏳ Waiting for training job..."
+kubectl wait --for=condition=complete job/breast-cancer-training \
+  -n "$HELM_NAMESPACE" --timeout=600s || true
+
+# ----------------------------
+# 9️⃣ Check rollout for API
 # ----------------------------
 kubectl rollout status deployment/breast-cancer-serving -n "$HELM_NAMESPACE"
 
