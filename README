@@ -215,3 +215,5 @@ This project is designed to run:
 
 - Locally using Minikube (development)
 - On remote Kubernetes clusters (production-ready structure)
+The original dataset has been replaced with a synthetic dataset to preserve privacy and confidentiality.  
+No personally identifiable information (PII) is included, ensuring compliance with data protection best practices.
